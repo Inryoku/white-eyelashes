@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap");
+
+.todo-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0 #000;
+  transform: rotate(-1deg);
+  transition: all 0.2s ease;
+}
+
+.todo-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #000;
+}
+
+.todo-card:hover {
+  transform: rotate(0deg) translateY(-2px);
+  box-shadow: 6px 6px 0 #000;
+}
+
+.punk-button {
+  background: #ff3366;
+  border: 2px solid #000;
+  box-shadow: 3px 3px 0 #000;
+  transform: translateY(0);
+  transition: all 0.1s ease;
+}
+
+.punk-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0 #000;
+}
+
+.punk-button:active {
+  transform: translateY(0);
+  box-shadow: 2px 2px 0 #000;
+}
+
+.punk-input {
+  border: 2px solid #000;
+  box-shadow: 3px 3px 0 #000;
+}
+
+.punk-input:focus {
+  outline: none;
+  border-color: #ff3366;
+}
+
+.marker-font {
+  font-family: "Permanent Marker", cursive;
+}
