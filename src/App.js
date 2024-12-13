@@ -1,149 +1,110 @@
 import React, { useState } from "react";
 
 export default function App() {
-  const [currentCards, setCurrentCards] = useState([]);
-
-  const handleAddCards = (newCard) => {
-    setCurrentCards((currentCards) => [...currentCards, newCard]);
-  };
   return (
     <div
       className="h-screen w-full 
     bg-[url('https://plus.unsplash.com/premium_photo-1725347346926-f568729d43b3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')]
     //  bg-cover bg-center bg-fixed"
     >
-      <Board currentCards={currentCards} />
-      <AddCardForm onAddCards={handleAddCards} />
+      <ItemManager />
     </div>
   );
 }
 
-function Board({ currentCards }) {
-  const [position, setPosition] = useState({ x: 100, y: 100 });
+function ItemManager() {
+  const [currentItem, setCurrentItem] = useState([
+    {
+      id: 1,
+      title: "i am here",
+      description: "Amazing",
+      position: { x: 400, y: 100 },
+      color: "",
+    },
+  ]);
 
-  const handlePositionChange = (newPosition) => {
-    setPosition(newPosition);
+  const handleAddItem = (newItem) => {
+    setCurrentItem((currentItem) => [...currentItem, newItem]);
   };
 
   return (
-    <div
-      className="h-screen w-full"
-      // to be recognized as a drop area
-      onDragOver={(e) => e.preventDefault()}
-      // Prevent default behavior on drop
-      onDrop={(e) => e.preventDefault()}
-    >
+    <>
+      <Board currentItemList={currentItem} />
+      <ItemInput onAddItem={handleAddItem} />
+    </>
+  );
+}
+
+function Board({ currentItemList }) {
+  return (
+    <div>
       <ul>
-        {currentCards.map((m) => (
-          <DraggableCard
-            position={position}
-            onPositionChange={handlePositionChange}
-          />
+        {currentItemList.map((singleItem) => (
+          <li>
+            <ItemCard singleItemData={singleItem} />
+          </li>
         ))}
       </ul>
     </div>
   );
 }
 
-function DraggableCard({ position, onPositionChange }) {
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
-  const [cardSize, setCardSize] = useState({ width: 0, height: 0 });
-
-  const handleDragStart = (e) => {
-    if (e.type === "touchstart") {
-      const touch = e.touches[0];
-      setOffset({
-        x: touch.clientX - position.x,
-        y: touch.clientY - position.y,
-      });
-      setDragging(true);
-    } else {
-      // Set element size
-      const cardElement = e.target.getBoundingClientRect();
-      setCardSize({
-        width: cardElement.width,
-        height: cardElement.height,
-      });
-      e.dataTransfer.setData("text/plain", "card");
-    }
-  };
-
-  const handleDragEnd = (e) => {
-    const { clientX, clientY } = e;
-
-    // adjust the center of the card with the cursor position
-    onPositionChange({
-      x: clientX - cardSize.width / 2,
-      y: clientY - cardSize.height / 2,
-    });
-  };
-
-  const handleTouchMove = (e) => {
-    if (!dragging) return;
-    const touch = e.touches[0];
-    const newX = touch.clientX - offset.x;
-    const newY = touch.clientY - offset.y;
-    onPositionChange({ x: newX, y: newY });
-  };
-
-  function handleTouchEnd() {
-    setDragging(false);
-  }
-
+function ItemCard({ singleItemData }) {
   return (
     <div
-      className={`todo-card absolute w-24 h-12 flex items-center justify-center`}
-      draggable
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onTouchStart={handleDragStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      className="todo-card p-4 w-64"
       style={{
         position: "absolute",
-        top: position.y,
-        left: position.x,
-        cursor: "grab",
+        left: singleItemData.position.x,
+        top: singleItemData.position.y,
+        backgroundColor: singleItemData.color,
       }}
     >
-      ドラッグ可能なカード
+      <div>{singleItemData.title}</div>
+      <div>{singleItemData.description}</div>
     </div>
   );
 }
 
-function AddCardForm({ onAddCards }) {
-  const [description, setDescription] = useState("");
+function ItemInput({ onAddItem }) {
+  const [taskTitle, setTaskTitle] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!description) return;
-    const newCard = { description, id: Date.now() };
-
-    console.log(newCard);
-    onAddCards(newCard);
-
-    setDescription("");
+    if (taskTitle.trim() !== "") {
+      const randomX = Math.random() * (window.innerWidth - 300);
+      const randomY = Math.random() * (window.innerHeight - 200);
+      const randomColor = `hsl(${Math.random() * 360}, 70%, 80%)`;
+      onAddItem({
+        id: Date.now(),
+        title: taskTitle,
+        description: "",
+        position: { x: randomX, y: randomY },
+        // color: randomColor,
+      });
+      setTaskTitle(""); // 入力欄をクリア
+    }
   };
-
   return (
-    <form className="punk-input" onSubmit={handleSubmit}>
-      <DescriptionInput
-        description={description}
-        setDescription={setDescription}
-      />
-      <button>Add</button>
+    <form
+      onSubmit={handleSubmit}
+      className="fixed bottom-6 left-1/2 -translate-x-1/2"
+    >
+      <div className="flex gap-2">
+        <input
+          className="w-80 px-4 py-2 punk-input marker-font bg-white/90"
+          type="text"
+          placeholder="I have to do ..."
+          value={taskTitle}
+          onChange={(e) => setTaskTitle(e.target.value)}
+        />
+        <button
+          className="punk-button text-white px-6 py-2 marker-font flex items-center gap-2"
+          type="submit"
+        >
+          Add
+        </button>
+      </div>
     </form>
-  );
-}
-
-function DescriptionInput({ description, setDescription }) {
-  return (
-    <input
-      type="text"
-      placeholder="Item..."
-      value={description}
-      onChange={(e) => setDescription(e.target.value)}
-    />
   );
 }
