@@ -7,6 +7,7 @@ const handleAddCards = (newCard) => {
 setCurrentCards((currentCards) => [...currentCards, newCard]);
 };
 return (
+
 <div
       className="h-screen w-full 
     bg-[url('https://plus.unsplash.com/premium_photo-1725347346926-f568729d43b3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')]
@@ -26,6 +27,7 @@ setPosition(newPosition);
 };
 
 return (
+
 <div
 className="h-screen w-full"
 // to be recognized as a drop area
@@ -92,6 +94,7 @@ setDragging(false);
 }
 
 return (
+
 <div
 className={`todo-card absolute w-24 h-12 flex items-center justify-center`}
 draggable
@@ -127,6 +130,7 @@ const newCard = { description, id: Date.now() };
 };
 
 return (
+
 <form className="punk-input" onSubmit={handleSubmit}>
 <DescriptionInput
         description={description}
