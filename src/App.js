@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2, Check, X } from "lucide-react";
 
 export default function App() {
   return (
     <div
       className="h-screen w-full 
     bg-[url('https://plus.unsplash.com/premium_photo-1725347346926-f568729d43b3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')]
-    //  bg-cover bg-center bg-fixed"
+    //  bg-cover bg-center bg-fixed patrick-hand-regular tracking-wider"
     >
       <ItemManager />
     </div>
@@ -45,10 +45,29 @@ function ItemManager() {
     handleAddItem(newItem);
   };
 
-  const handleItemModify = (id, key, value) => {
+  const handleModifyItem = (id, key, value) => {
     setCurrentItemList((currentItemList) =>
       currentItemList.map((oneItem) =>
         oneItem.id === id ? { ...oneItem, [key]: value } : oneItem
+      )
+    );
+  };
+
+  const handleEditItem = (id, editedData) => {
+    const editableKeys = ["title", "description", "priority", "progression"];
+    setCurrentItemList((currentItemList) =>
+      currentItemList.map((oneItem) =>
+        oneItem.id === id
+          ? {
+              ...oneItem,
+              ...Object.fromEntries(
+                editableKeys.map((key) => [
+                  key,
+                  editedData[key] ?? oneItem[key],
+                ])
+              ),
+            }
+          : oneItem
       )
     );
   };
@@ -68,14 +87,15 @@ function ItemManager() {
       <Board
         currentItemListList={currentItemList}
         onDelete={handleDeleteItem}
-        onModifyItem={handleItemModify}
+        onModifyItem={handleModifyItem}
+        onEditItem={handleEditItem}
       />
       <ItemInput onAddItem={handleAddTaskTitle} />
     </>
   );
 }
 
-function Board({ currentItemListList, onDelete, onModifyItem }) {
+function Board({ currentItemListList, onDelete, onModifyItem, onEditItem }) {
   return (
     <div
       onDragOver={(e) => {
@@ -96,6 +116,7 @@ function Board({ currentItemListList, onDelete, onModifyItem }) {
               singleItemData={singleItem}
             >
               <ItemCard
+                onEditItem={onEditItem}
                 singleItemData={singleItem}
                 onDelete={onDelete}
                 onModifyItem={onModifyItem}
@@ -108,7 +129,84 @@ function Board({ currentItemListList, onDelete, onModifyItem }) {
   );
 }
 
-function ItemCard({ singleItemData, onDelete, onModifyItem }) {
+function ItemCard({ singleItemData, onDelete, onEditItem, onModifyItem }) {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleEditEnd = () => {
+    setIsEditing(false);
+  };
+  const handleEditStart = () => {
+    setIsEditing(true);
+  };
+
+  return isEditing ? (
+    <EditForm
+      singleItemData={singleItemData}
+      onEditEnd={handleEditEnd}
+      onEditItem={onEditItem}
+    />
+  ) : (
+    <div
+      className="todo-card p-4"
+      style={{
+        position: "absolute",
+        left: singleItemData.position.x,
+        top: singleItemData.position.y,
+        backgroundColor: singleItemData.color,
+        width: `${singleItemData.width}px`,
+      }}
+    >
+      <h3>{singleItemData.title}</h3>
+      <p>{singleItemData.description}</p>
+      <button
+        onClick={() => onDelete(singleItemData.id)}
+        className="text-gray-400 hover:text-red-500 transition-colors"
+      >
+        <Trash2 size={18} />
+      </button>
+      <button
+        onClick={() => handleEditStart()}
+        className="text-gray-400 hover:text-green-500 transition-colors"
+      >
+        <Pencil size={18} />
+      </button>
+      <ResizeHandle
+        positionX={singleItemData.position.x}
+        currentWidth={singleItemData.width}
+        onWidthChange={(newWidth) =>
+          onModifyItem(singleItemData.id, "width", newWidth)
+        }
+      />
+    </div>
+  );
+}
+
+function EditForm({ singleItemData, onEditEnd, onEditItem }) {
+  const [title, setTitle] = useState(singleItemData.title);
+  const [description, setDescription] = useState(singleItemData.description);
+  const [priority, setPriority] = useState(singleItemData.priority);
+  const [progression, setProgression] = useState(singleItemData.progression);
+
+  const handleSaveEdit = () => {
+    const editedData = {
+      title,
+      description,
+      priority,
+      progression,
+    };
+
+    onEditItem(singleItemData.id, editedData);
+    onEditEnd();
+  };
+
+  const handleCancelEdit = () => {
+    setTitle("");
+    setDescription("");
+    setPriority("");
+    setProgression("");
+    onEditEnd();
+  };
+
   return (
     <div
       className="todo-card p-4"
@@ -120,21 +218,23 @@ function ItemCard({ singleItemData, onDelete, onModifyItem }) {
         width: `${singleItemData.width}px`,
       }}
     >
-      <div>{singleItemData.title}</div>
-      <div>{singleItemData.description}</div>
-      <button
-        onClick={() => onDelete(singleItemData.id)}
-        className="text-gray-400 hover:text-red-500 transition-colors"
-      >
-        <Trash2 size={18} />
-      </button>
-      <ResizeHandle
-        positionX={singleItemData.position.x}
-        currentWidth={singleItemData.width}
-        onWidthChange={(newWidth) =>
-          onModifyItem(singleItemData.id, "width", newWidth)
-        }
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Title"
       />
+      <textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Description"
+      />
+      <button onClick={() => handleSaveEdit()}>
+        <Check className="text-green-500 hover:text-green-300 transition-colors" />
+      </button>
+      <button onClick={() => handleCancelEdit()}>
+        <X className="text-red-500 hover:text-red-300 transition-colors" />
+      </button>
     </div>
   );
 }
