@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Pencil, Trash2, Check, X } from "lucide-react";
 
 export default function App() {
@@ -111,11 +111,12 @@ function Board({
   onTurnEdit,
   editingItemId,
 }) {
-  const [clickedComponentName, setClickedComponentName] = useState();
+  const [isItemCardClicked, setIsItemCardClicked] = useState();
   const handleClickComponent = (componentName, e) => {
     e.stopPropagation(); // イベントの伝播を止める
     console.log(`Clicked on: ${componentName}`);
-    setClickedComponentName(componentName);
+    setIsItemCardClicked(componentName === "ItemCard");
+    console.log(isItemCardClicked);
   };
 
   return (
@@ -149,6 +150,7 @@ function Board({
                 onModifyItem={onModifyItem}
                 isEditing={editingItemId === singleItem.id}
                 onTurnEdit={onTurnEdit}
+                isItemCardClicked={isItemCardClicked}
               />
             </DraggableWrapper>
           </li>
@@ -165,6 +167,7 @@ function ItemCard({
   onModifyItem,
   onTurnEdit,
   isEditing,
+  isItemCardClicked,
 }) {
   const handleStartEdit = (id) => {
     onTurnEdit(id);
@@ -179,6 +182,7 @@ function ItemCard({
       singleItemData={singleItemData}
       onEndEdit={handleEndEdit}
       onEditItem={onEditItem}
+      isItemCardClicked={isItemCardClicked}
     />
   ) : (
     <div
@@ -216,23 +220,41 @@ function ItemCard({
   );
 }
 
-function EditForm({ singleItemData, onEndEdit, onEditItem }) {
+function EditForm({
+  singleItemData,
+  onEndEdit,
+  onEditItem,
+  isItemCardClicked,
+}) {
   const [title, setTitle] = useState(singleItemData.title);
   const [description, setDescription] = useState(singleItemData.description);
   const [priority, setPriority] = useState(singleItemData.priority);
   const [progression, setProgression] = useState(singleItemData.progression);
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = useCallback(() => {
     const editedData = {
       title,
       description,
       priority,
       progression,
     };
-
     onEditItem(singleItemData.id, editedData);
     onEndEdit();
-  };
+  }, [
+    title,
+    description,
+    priority,
+    progression,
+    onEditItem,
+    onEndEdit,
+    singleItemData.id,
+  ]);
+
+  useEffect(() => {
+    if (!isItemCardClicked) {
+      handleSaveEdit();
+    }
+  }, [isItemCardClicked, handleSaveEdit]);
 
   const handleCancelEdit = () => {
     setTitle(null);
