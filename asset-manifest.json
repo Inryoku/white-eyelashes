@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/white-eyelashes/static/css/main.8c61d126.css",
+    "main.js": "/white-eyelashes/static/js/main.81d31c33.js",
+    "index.html": "/white-eyelashes/index.html",
+    "main.8c61d126.css.map": "/white-eyelashes/static/css/main.8c61d126.css.map",
+    "main.81d31c33.js.map": "/white-eyelashes/static/js/main.81d31c33.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.8c61d126.css",
+    "static/js/main.81d31c33.js"
+  ]
+}
