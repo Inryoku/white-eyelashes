@@ -14,6 +14,8 @@ export default function App() {
 }
 
 function ItemManager() {
+  const [editingItemId, setEditingItemId] = useState(null);
+
   const [currentItemList, setCurrentItemList] = useState([
     {
       id: 1,
@@ -26,6 +28,10 @@ function ItemManager() {
       width: 256,
     },
   ]);
+
+  function handleEditId(id) {
+    setEditingItemId(id);
+  }
 
   const handleAddTaskTitle = (taskTitle) => {
     const randomX = Math.random() * (window.innerWidth - 300);
@@ -89,13 +95,29 @@ function ItemManager() {
         onDelete={handleDeleteItem}
         onModifyItem={handleModifyItem}
         onEditItem={handleEditItem}
+        onTurnEdit={handleEditId}
+        editingItemId={editingItemId}
       />
       <ItemInput onAddItem={handleAddTaskTitle} />
     </>
   );
 }
 
-function Board({ currentItemListList, onDelete, onModifyItem, onEditItem }) {
+function Board({
+  currentItemListList,
+  onDelete,
+  onModifyItem,
+  onEditItem,
+  onTurnEdit,
+  editingItemId,
+}) {
+  const [clickedComponentName, setClickedComponentName] = useState();
+  const handleClickComponent = (componentName, e) => {
+    e.stopPropagation(); // イベントの伝播を止める
+    console.log(`Clicked on: ${componentName}`);
+    setClickedComponentName(componentName);
+  };
+
   return (
     <div
       onDragOver={(e) => {
@@ -107,19 +129,26 @@ function Board({ currentItemListList, onDelete, onModifyItem, onEditItem }) {
         console.log("Item dropped");
       }}
       className="h-screen w-full"
+      onClick={(e) => handleClickComponent("Board", e)}
     >
       <ul>
         {currentItemListList.map((singleItem) => (
-          <li key={singleItem.id}>
+          <li
+            key={singleItem.id}
+            onClick={(e) => handleClickComponent("ItemCard", e)}
+          >
             <DraggableWrapper
               onPositionChange={onModifyItem}
               singleItemData={singleItem}
+              isEditing={editingItemId === singleItem.id}
             >
               <ItemCard
                 onEditItem={onEditItem}
                 singleItemData={singleItem}
                 onDelete={onDelete}
                 onModifyItem={onModifyItem}
+                isEditing={editingItemId === singleItem.id}
+                onTurnEdit={onTurnEdit}
               />
             </DraggableWrapper>
           </li>
@@ -129,20 +158,26 @@ function Board({ currentItemListList, onDelete, onModifyItem, onEditItem }) {
   );
 }
 
-function ItemCard({ singleItemData, onDelete, onEditItem, onModifyItem }) {
-  const [isEditing, setIsEditing] = useState(false);
-
-  const handleEditEnd = () => {
-    setIsEditing(false);
+function ItemCard({
+  singleItemData,
+  onDelete,
+  onEditItem,
+  onModifyItem,
+  onTurnEdit,
+  isEditing,
+}) {
+  const handleStartEdit = (id) => {
+    onTurnEdit(id);
   };
-  const handleEditStart = () => {
-    setIsEditing(true);
+
+  const handleEndEdit = () => {
+    onTurnEdit(null);
   };
 
   return isEditing ? (
     <EditForm
       singleItemData={singleItemData}
-      onEditEnd={handleEditEnd}
+      onEndEdit={handleEndEdit}
       onEditItem={onEditItem}
     />
   ) : (
@@ -165,7 +200,7 @@ function ItemCard({ singleItemData, onDelete, onEditItem, onModifyItem }) {
         <Trash2 size={18} />
       </button>
       <button
-        onClick={() => handleEditStart()}
+        onClick={() => handleStartEdit(singleItemData.id)}
         className="text-gray-400 hover:text-green-500 transition-colors"
       >
         <Pencil size={18} />
@@ -181,7 +216,7 @@ function ItemCard({ singleItemData, onDelete, onEditItem, onModifyItem }) {
   );
 }
 
-function EditForm({ singleItemData, onEditEnd, onEditItem }) {
+function EditForm({ singleItemData, onEndEdit, onEditItem }) {
   const [title, setTitle] = useState(singleItemData.title);
   const [description, setDescription] = useState(singleItemData.description);
   const [priority, setPriority] = useState(singleItemData.priority);
@@ -196,15 +231,15 @@ function EditForm({ singleItemData, onEditEnd, onEditItem }) {
     };
 
     onEditItem(singleItemData.id, editedData);
-    onEditEnd();
+    onEndEdit();
   };
 
   const handleCancelEdit = () => {
-    setTitle("");
-    setDescription("");
-    setPriority("");
-    setProgression("");
-    onEditEnd();
+    setTitle(null);
+    setDescription(null);
+    setPriority(null);
+    setProgression(null);
+    onEndEdit();
   };
 
   return (
@@ -276,11 +311,17 @@ function ResizeHandle({ positionX, currentWidth, onWidthChange }) {
   );
 }
 
-function DraggableWrapper({ children, onPositionChange, singleItemData }) {
+function DraggableWrapper({
+  children,
+  onPositionChange,
+  singleItemData,
+  isEditing,
+}) {
   const [cardSize, setCardSize] = useState({ width: 0, height: 0 });
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   const handleDragStart = (e) => {
+    if (isEditing) return;
     const cardElement = e.target.firstChild.getBoundingClientRect();
     const targetSize = {
       width: cardElement.width,
@@ -303,6 +344,7 @@ function DraggableWrapper({ children, onPositionChange, singleItemData }) {
   };
 
   const handleDragEnd = (e) => {
+    if (isEditing) return;
     console.log(cardSize);
 
     const newPosition = {
@@ -314,8 +356,8 @@ function DraggableWrapper({ children, onPositionChange, singleItemData }) {
 
   return (
     <div
-      draggable
-      className="cursor-grab"
+      draggable={!isEditing}
+      className={`${isEditing ? "cursor-default" : "cursor-grab"}`}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
