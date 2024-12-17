@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/white-eyelashes/static/css/main.8c61d126.css",
-    "main.js": "/white-eyelashes/static/js/main.81d31c33.js",
+    "main.css": "/white-eyelashes/static/css/main.941ea20f.css",
+    "main.js": "/white-eyelashes/static/js/main.f4f0a1cc.js",
     "index.html": "/white-eyelashes/index.html",
-    "main.8c61d126.css.map": "/white-eyelashes/static/css/main.8c61d126.css.map",
-    "main.81d31c33.js.map": "/white-eyelashes/static/js/main.81d31c33.js.map"
+    "main.941ea20f.css.map": "/white-eyelashes/static/css/main.941ea20f.css.map",
+    "main.f4f0a1cc.js.map": "/white-eyelashes/static/js/main.f4f0a1cc.js.map"
   },
   "entrypoints": [
-    "static/css/main.8c61d126.css",
-    "static/js/main.81d31c33.js"
+    "static/css/main.941ea20f.css",
+    "static/js/main.f4f0a1cc.js"
   ]
 }
