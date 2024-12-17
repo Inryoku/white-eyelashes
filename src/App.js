@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Pencil, Trash2, Check, X, Plus } from "lucide-react";
+import { useItemLogic } from "./useItemLogic";
 
 export default function App() {
   return (
@@ -14,79 +15,26 @@ export default function App() {
 }
 
 function ItemManager() {
-  const [editingItemId, setEditingItemId] = useState(null);
-
-  const [currentItemList, setCurrentItemList] = useState([
+  const {
+    handleEditId,
+    handleAddTaskTitle,
+    handleModifyItem,
+    handleEditItem,
+    handleDeleteItem,
+    currentItemList,
+    editingItemId,
+  } = useItemLogic([
     {
       id: 1,
       title: "i am here",
       description: "#1 Amazing \n#2 trash",
       priority: 2, // 1: low, 2: middle, 3: high
-      progression: 50,
+      progress: 50,
       position: { x: 100, y: 100 },
       color: "",
       width: 256,
     },
   ]);
-
-  const handleEditId = (id) => {
-    setEditingItemId(id);
-  };
-
-  const handleAddTaskTitle = (taskTitle) => {
-    const randomX = Math.random() * (window.innerWidth - 300);
-    const randomY = Math.random() * (window.innerHeight - 200);
-    const randomColor = `hsl(${Math.random() * 360}, 70%, 80%)`;
-    const newItem = {
-      id: Date.now(),
-      title: taskTitle,
-      description: "",
-      priority: 2,
-      progression: 0,
-      position: { x: randomX, y: randomY },
-      color: randomColor,
-      width: 256,
-    };
-    console.log("New Item:", newItem);
-    handleAddItem(newItem);
-  };
-
-  const handleModifyItem = (id, key, value) => {
-    setCurrentItemList((currentItemList) =>
-      currentItemList.map((oneItem) =>
-        oneItem.id === id ? { ...oneItem, [key]: value } : oneItem
-      )
-    );
-  };
-
-  const handleEditItem = (id, editedData) => {
-    const editableKeys = ["title", "description", "priority", "progression"];
-    setCurrentItemList((currentItemList) =>
-      currentItemList.map((oneItem) =>
-        oneItem.id === id
-          ? {
-              ...oneItem,
-              ...Object.fromEntries(
-                editableKeys.map((key) => [
-                  key,
-                  editedData[key] ?? oneItem[key],
-                ])
-              ),
-            }
-          : oneItem
-      )
-    );
-  };
-
-  const handleAddItem = (newItem) => {
-    setCurrentItemList((currentItemList) => [...currentItemList, newItem]);
-  };
-
-  const handleDeleteItem = (id) => {
-    setCurrentItemList((currentItemList) =>
-      currentItemList.filter((f) => f.id !== id)
-    );
-  };
 
   return (
     <>
@@ -214,10 +162,7 @@ function DisplayCard({
       }}
     >
       <h3>{singleItemData.title}</h3>
-      <ProgressBar
-        progress={singleItemData.progression}
-        isEditing={isEditing}
-      />
+      <ProgressBar progress={singleItemData.progress} isEditing={isEditing} />
       <p className="text-sm text-gray-600 whitespace-pre-wrap">
         {singleItemData.description}
       </p>
@@ -257,14 +202,14 @@ function EditForm({
   const [title, setTitle] = useState(singleItemData.title);
   const [description, setDescription] = useState(singleItemData.description);
   const [priority, setPriority] = useState(singleItemData.priority);
-  const [progression, setProgression] = useState(singleItemData.progression);
+  const [progress, setProgress] = useState(singleItemData.progress);
 
   const handleSaveEdit = useCallback(() => {
     const editedData = {
       title,
       description,
       priority,
-      progression,
+      progress,
     };
     onEditItem(singleItemData.id, editedData);
     onEndEdit();
@@ -272,7 +217,7 @@ function EditForm({
     title,
     description,
     priority,
-    progression,
+    progress,
     onEditItem,
     onEndEdit,
     singleItemData.id,
@@ -288,8 +233,8 @@ function EditForm({
     onEndEdit();
   };
 
-  const handleChangeProgression = (newProgress) => {
-    setProgression(newProgress);
+  const handleChangeProgress = (newProgress) => {
+    setProgress(newProgress);
   };
 
   return (
@@ -310,9 +255,9 @@ function EditForm({
         placeholder="Title"
       />
       <ProgressBar
-        progress={progression} // 現在の進捗値を渡す
+        progress={progress}
         isEditing={isEditing}
-        onChangeProgression={handleChangeProgression} // 更新関数を渡す
+        onChangeProgress={handleChangeProgress} // 更新関数を渡す
       />
       <textarea
         className="w-full px-2 py-1 punk-input min-h-[80px] resize-y"
@@ -332,10 +277,12 @@ function EditForm({
   );
 }
 
-function ProgressBar({ progress, isEditing, onChangeProgression }) {
+function ProgressBar({ progress, isEditing, onChangeProgress }) {
   // Rangeスライダーの値を更新
   const handleChange = (e) => {
-    onChangeProgression(Number(e.target.value));
+    if (onChangeProgress) {
+      onChangeProgress(Number(e.target.value));
+    }
   };
 
   // プログレスバーの色を取得
