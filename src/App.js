@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Pencil, Trash2, Check, X } from "lucide-react";
+import { Pencil, Trash2, Check, X, Plus } from "lucide-react";
 
 export default function App() {
   return (
@@ -29,14 +29,14 @@ function ItemManager() {
     },
   ]);
 
-  function handleEditId(id) {
+  const handleEditId = (id) => {
     setEditingItemId(id);
-  }
+  };
 
   const handleAddTaskTitle = (taskTitle) => {
     const randomX = Math.random() * (window.innerWidth - 300);
     const randomY = Math.random() * (window.innerHeight - 200);
-    // const randomColor = `hsl(${Math.random() * 360}, 70%, 80%)`;
+    const randomColor = `hsl(${Math.random() * 360}, 70%, 80%)`;
     const newItem = {
       id: Date.now(),
       title: taskTitle,
@@ -44,7 +44,7 @@ function ItemManager() {
       priority: 2,
       progression: 0,
       position: { x: randomX, y: randomY },
-      // color: randomColor,
+      color: randomColor,
       width: 256,
     };
     console.log("New Item:", newItem);
@@ -183,35 +183,44 @@ function ItemCard({
       onEndEdit={handleEndEdit}
       onEditItem={onEditItem}
       isItemCardClicked={isItemCardClicked}
+      isEditing={isEditing}
     />
   ) : (
     <div
-      className="todo-card p-4"
+      className="todo-card p-4 flex flex-col gap-2"
       style={{
         position: "absolute",
         left: singleItemData.position.x,
         top: singleItemData.position.y,
-        backgroundColor: singleItemData.color,
         width: `${singleItemData.width}px`,
       }}
     >
       <h3>{singleItemData.title}</h3>
-      <p>{singleItemData.description}</p>
-      <button
-        onClick={() => onDelete(singleItemData.id)}
-        className="text-gray-400 hover:text-red-500 transition-colors"
-      >
-        <Trash2 size={18} />
-      </button>
-      <button
-        onClick={() => handleStartEdit(singleItemData.id)}
-        className="text-gray-400 hover:text-green-500 transition-colors"
-      >
-        <Pencil size={18} />
-      </button>
+      <ProgressBar
+        progress={singleItemData.progression}
+        isEditing={isEditing}
+      />
+      <p className="text-sm text-gray-600 whitespace-pre-wrap">
+        {singleItemData.description}
+      </p>
+      <div className="flex gap-1">
+        <button
+          onClick={() => onDelete(singleItemData.id)}
+          className="text-gray-400 hover:text-red-500 transition-colors"
+        >
+          <Trash2 size={18} />
+        </button>
+        <button
+          onClick={() => handleStartEdit(singleItemData.id)}
+          className="text-gray-400 hover:text-green-500 transition-colors"
+        >
+          <Pencil size={18} />
+        </button>
+      </div>
       <ResizeHandle
         positionX={singleItemData.position.x}
         currentWidth={singleItemData.width}
+        itemColor={singleItemData.color}
         onWidthChange={(newWidth) =>
           onModifyItem(singleItemData.id, "width", newWidth)
         }
@@ -225,6 +234,7 @@ function EditForm({
   onEndEdit,
   onEditItem,
   isItemCardClicked,
+  isEditing,
 }) {
   const [title, setTitle] = useState(singleItemData.title);
   const [description, setDescription] = useState(singleItemData.description);
@@ -257,46 +267,96 @@ function EditForm({
   }, [isItemCardClicked, handleSaveEdit]);
 
   const handleCancelEdit = () => {
-    setTitle(null);
-    setDescription(null);
-    setPriority(null);
-    setProgression(null);
     onEndEdit();
+  };
+
+  const handleChangeProgression = (newProgress) => {
+    setProgression(newProgress);
   };
 
   return (
     <div
-      className="todo-card p-4"
+      className="todo-card p-4 flex flex-col gap-3"
       style={{
         position: "absolute",
         left: singleItemData.position.x,
         top: singleItemData.position.y,
-        backgroundColor: singleItemData.color,
         width: `${singleItemData.width}px`,
       }}
     >
       <input
+        className="flex-1 px-2 py-1 punk-input"
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title"
       />
+      <ProgressBar
+        progress={progression} // 現在の進捗値を渡す
+        isEditing={isEditing}
+        onChangeProgression={handleChangeProgression} // 更新関数を渡す
+      />
       <textarea
+        className="w-full px-2 py-1 punk-input min-h-[80px] resize-y"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description"
       />
-      <button onClick={() => handleSaveEdit()}>
-        <Check className="text-green-500 hover:text-green-300 transition-colors" />
-      </button>
-      <button onClick={() => handleCancelEdit()}>
-        <X className="text-red-500 hover:text-red-300 transition-colors" />
-      </button>
+      <div className="flex gap-1">
+        <button onClick={() => handleSaveEdit()}>
+          <Check className="text-green-500 hover:text-green-300 transition-colors" />
+        </button>
+        <button onClick={() => handleCancelEdit()}>
+          <X className="text-red-500 hover:text-red-300 transition-colors" />
+        </button>
+      </div>
     </div>
   );
 }
 
-function ResizeHandle({ positionX, currentWidth, onWidthChange }) {
+function ProgressBar({ progress, isEditing, onChangeProgression }) {
+  // Rangeスライダーの値を更新
+  const handleChange = (e) => {
+    onChangeProgression(Number(e.target.value));
+  };
+  // プログレスバーの色を取得
+  const getProgressColor = (value) => {
+    if (value < 30) return "bg-red-500"; // 0–30%: 赤（要注意）
+    if (value < 50) return "bg-orange-400"; // 30–50%: オレンジ（進行中）
+    if (value < 70) return "bg-purple-500"; // 50–70%: 紫（中間段階）
+    if (value < 90) return "bg-blue-400"; // 70–90%: 青（順調）
+    return "bg-green-500"; // 90–100%: 緑（完了間近）
+  };
+
+  return (
+    <div className="w-full">
+      {isEditing ? (
+        <div className="flex items-center gap-2">
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={progress} // 現在の進捗値
+            onChange={handleChange} // 値が変更されたときの処理
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+          <span className="text-sm marker-font w-12">{progress}%</span>
+        </div>
+      ) : (
+        <div className="w-full h-2 bg-gray-200 border-2 border-black rounded-full overflow-hidden">
+          <div
+            className={`h-full transition-all duration-300 ${getProgressColor(
+              progress
+            )}`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ResizeHandle({ positionX, currentWidth, onWidthChange, itemColor }) {
   const handleDrag = (e) => {
     const newWidth = e.clientX - positionX;
     if (newWidth >= 256 && newWidth <= 400) {
@@ -327,7 +387,7 @@ function ResizeHandle({ positionX, currentWidth, onWidthChange }) {
         width: "12px",
         height: "100%",
         cursor: "ew-resize",
-        backgroundColor: "rgba(0, 0, 0, 0.1)",
+        backgroundColor: "rgba(0, 0, 0, 0.1)", //迷う`{itemColor}`,
       }}
     ></div>
   );
@@ -415,6 +475,7 @@ function ItemInput({ onAddItem }) {
           className="punk-button text-white px-6 py-2 marker-font flex items-center gap-2"
           type="submit"
         >
+          <Plus size={20} />
           Add
         </button>
       </div>
