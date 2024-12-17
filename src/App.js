@@ -20,7 +20,7 @@ function ItemManager() {
     {
       id: 1,
       title: "i am here",
-      description: "Amazing",
+      description: "#1 Amazing \n#2 trash",
       priority: 2, // 1: low, 2: middle, 3: high
       progression: 50,
       position: { x: 100, y: 100 },
@@ -143,7 +143,7 @@ function Board({
               singleItemData={singleItem}
               isEditing={editingItemId === singleItem.id}
             >
-              <ItemCard
+              <TwoFacesItemCard
                 onEditItem={onEditItem}
                 singleItemData={singleItem}
                 onDelete={onDelete}
@@ -160,7 +160,7 @@ function Board({
   );
 }
 
-function ItemCard({
+function TwoFacesItemCard({
   singleItemData,
   onDelete,
   onEditItem,
@@ -186,6 +186,24 @@ function ItemCard({
       isEditing={isEditing}
     />
   ) : (
+    <DisplayCard
+      singleItemData={singleItemData}
+      onDelete={onDelete}
+      isEditing={isEditing}
+      handleStartEdit={handleStartEdit}
+      onModifyItem={onModifyItem}
+    />
+  );
+}
+
+function DisplayCard({
+  singleItemData,
+  onDelete,
+  isEditing,
+  handleStartEdit,
+  onModifyItem,
+}) {
+  return (
     <div
       className="todo-card p-4 flex flex-col gap-2"
       style={{
@@ -203,7 +221,7 @@ function ItemCard({
       <p className="text-sm text-gray-600 whitespace-pre-wrap">
         {singleItemData.description}
       </p>
-      <div className="flex gap-1">
+      <div className="flex gap-2 justify-end mr-4">
         <button
           onClick={() => onDelete(singleItemData.id)}
           className="text-gray-400 hover:text-red-500 transition-colors"
@@ -302,12 +320,12 @@ function EditForm({
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description"
       />
-      <div className="flex gap-1">
-        <button onClick={() => handleSaveEdit()}>
-          <Check className="text-green-500 hover:text-green-300 transition-colors" />
-        </button>
+      <div className="flex gap-2 justify-end mr-4">
         <button onClick={() => handleCancelEdit()}>
           <X className="text-red-500 hover:text-red-300 transition-colors" />
+        </button>
+        <button onClick={() => handleSaveEdit()}>
+          <Check className="text-green-500 hover:text-green-300 transition-colors" />
         </button>
       </div>
     </div>
@@ -319,36 +337,45 @@ function ProgressBar({ progress, isEditing, onChangeProgression }) {
   const handleChange = (e) => {
     onChangeProgression(Number(e.target.value));
   };
+
   // プログレスバーの色を取得
   const getProgressColor = (value) => {
-    if (value < 30) return "bg-red-500"; // 0–30%: 赤（要注意）
-    if (value < 50) return "bg-orange-400"; // 30–50%: オレンジ（進行中）
-    if (value < 70) return "bg-purple-500"; // 50–70%: 紫（中間段階）
-    if (value < 90) return "bg-blue-400"; // 70–90%: 青（順調）
-    return "bg-green-500"; // 90–100%: 緑（完了間近）
+    if (value < 30) return "#f87171"; // 赤 (Tailwind: bg-red-500)
+    if (value < 50) return "#fb923c"; // オレンジ (Tailwind: bg-orange-400)
+    if (value < 70) return "#a78bfa"; // 紫 (Tailwind: bg-purple-500)
+    if (value < 90) return "#60a5fa"; // 青 (Tailwind: bg-blue-400)
+    return "#34d399"; // 緑 (Tailwind: bg-green-500)
   };
 
   return (
     <div className="w-full">
       {isEditing ? (
-        <div className="flex items-center gap-2">
+        <div className="relative w-full flex items-center gap-2">
+          {/* Inputスライダー */}
           <input
             type="range"
             min="0"
             max="100"
-            value={progress} // 現在の進捗値
-            onChange={handleChange} // 値が変更されたときの処理
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            value={progress}
+            onChange={handleChange}
+            className="w-full h-2 appearance-none rounded-lg"
+            style={{
+              background: `linear-gradient(to right, ${getProgressColor(
+                progress
+              )} ${progress}%, #e5e7eb ${progress}%)`,
+            }}
           />
-          <span className="text-sm marker-font w-12">{progress}%</span>
+          {/* 進捗値 */}
+          <span className="text-sm w-12 text-gray-700">{progress}%</span>
         </div>
       ) : (
         <div className="w-full h-2 bg-gray-200 border-2 border-black rounded-full overflow-hidden">
           <div
-            className={`h-full transition-all duration-300 ${getProgressColor(
-              progress
-            )}`}
-            style={{ width: `${progress}%` }}
+            className="h-full transition-all duration-300"
+            style={{
+              width: `${progress}%`,
+              backgroundColor: getProgressColor(progress),
+            }}
           />
         </div>
       )}
