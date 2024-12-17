@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Pencil, Trash2, Check, X, Plus } from "lucide-react";
 import { useItemLogic } from "./useItemLogic";
+import TextareaAutosize from "react-textarea-autosize";
 
 export default function App() {
   return (
@@ -26,10 +27,11 @@ function ItemManager() {
   } = useItemLogic([
     {
       id: 1,
-      title: "i am here",
-      description: "#1 Amazing \n#2 trash",
+      title: "🎉 Welcome to Your Task Board!",
+      description:
+        "#1 Drag Me 🖱️\n#2 Edit Me ✏️\n#3 Delete Me 🗑️\n\n✨ Let's get organized!",
       priority: 2, // 1: low, 2: middle, 3: high
-      progress: 50,
+      progress: 49,
       position: { x: 100, y: 100 },
       color: "",
       width: 256,
@@ -259,11 +261,11 @@ function EditForm({
         isEditing={isEditing}
         onChangeProgress={handleChangeProgress} // 更新関数を渡す
       />
-      <textarea
+      <TextareaAutosize
         className="w-full px-2 py-1 punk-input min-h-[80px] resize-y"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="Description"
+        placeholder="Description..."
       />
       <div className="flex gap-2 justify-end mr-4">
         <button onClick={() => handleCancelEdit()}>
@@ -416,6 +418,10 @@ function DraggableWrapper({
       className={`${isEditing ? "cursor-default" : "cursor-grab"}`}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragOver={(e) => {
+        e.preventDefault(); // Firefox対応
+        e.dataTransfer.dropEffect = "move";
+      }}
     >
       {children}
     </div>
