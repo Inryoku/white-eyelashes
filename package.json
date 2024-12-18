@@ -1,7 +1,7 @@
 {
   "name": "moon",
   "version": "0.1.0",
-  "homepage": "https://Inryoku.github.io/white-eyelashes",
+  "homepage": "https://inryoku.github.io/white-eyelashes",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",

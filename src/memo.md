@@ -151,3 +151,9 @@ onChange={(e) => setDescription(e.target.value)}
 />
 );
 }
+
+## 画面のサイズ変化で位置を相対変化させたい。
+
+##　 wanna make side bar like dairy
+
+## Add sticker pannel

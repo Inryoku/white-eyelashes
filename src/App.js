@@ -34,7 +34,7 @@ function ItemManager() {
       progress: 49,
       position: { x: 100, y: 100 },
       color: "",
-      width: 256,
+      width: 290,
     },
   ]);
 
@@ -79,7 +79,7 @@ function Board({
         e.preventDefault();
         console.log("Item dropped");
       }}
-      className="h-screen w-full"
+      className="h-screen w-full flex"
       onClick={(e) => handleClickComponent("Board", e)}
     >
       <ul>
