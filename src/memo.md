@@ -157,3 +157,15 @@ onChange={(e) => setDescription(e.target.value)}
 ##　 wanna make side bar like dairy
 
 ## Add sticker pannel
+
+return (
+<div className="relative flex">
+{/_ トグルボタン _/}
+<button
+onClick={toggleSidebar}
+className="absolute top-6 left-2 z-20 p-2 bg-black text-white rounded-full shadow-lg hover:scale-110 transition-transform"
+style={{
+          transform: isOpen ? "translateX(280px)" : "translateX(0)", // ボタンの位置もサイドバーに合わせる
+        }} >
+{isOpen ? "❌" : "➕"} {/_ アイコン変更 _/}
+</button>
