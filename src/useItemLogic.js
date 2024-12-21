@@ -36,6 +36,7 @@ export function useItemLogic(initialItems) {
       position: { x: randomX, y: randomY },
       color: randomColor,
       width: 256,
+      sticker: "",
     };
     console.log("New Item:", newItem);
     handleAddItem(newItem);
