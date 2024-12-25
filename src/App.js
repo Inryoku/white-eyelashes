@@ -481,6 +481,8 @@ function DisplayCard({
 }) {
   const [isStickerPickerVisible, setIsStickerPickerVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const [isDescriptionLong, setIsDescriptionLong] = useState(false);
 
   const handleToggleStickerPicker = () => {
     setIsStickerPickerVisible(() => !isStickerPickerVisible);
@@ -488,6 +490,10 @@ function DisplayCard({
 
   const handleDeleteItem = () => {
     onDelete(singleItemData.id);
+  };
+
+  const handleToggleDescriptionTab = () => {
+    setIsDescriptionOpen(!isDescriptionOpen);
   };
 
   return (
@@ -518,6 +524,10 @@ function DisplayCard({
       </p>
 
       <div className="flex gap-2 justify-end mr-4">
+        <button onClick={handleToggleDescriptionTab}>
+          {isDescriptionOpen ? <Trash2 size={18} /> : <Pencil size={18} />}
+        </button>
+
         <button
           onClick={() => setIsModalOpen(true)}
           className="text-gray-400 hover:text-red-500 transition-colors"
@@ -696,17 +706,20 @@ function EditForm({
         placeholder="Title..."
         autoFocus
       />
+
       <ProgressBar
         progress={progress}
         isEditing={isEditing}
         onChangeProgress={handleChangeProgress}
       />
+
       <TextareaAutosize
-        className="w-full px-2 py-1 punk-input min-h-[80px] resize-y"
+        className="w-full px-2 py-1 punk-input max-h-[800px] resize-y text-sm"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description..."
       />
+
       <div className="flex gap-2 justify-end mr-4">
         <button onClick={() => handleCancelEdit()}>
           <X className="text-red-500 hover:text-red-300 transition-colors" />
