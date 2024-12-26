@@ -185,21 +185,21 @@ function SidebarHeader() {
   return (
     <div
       style={{
-        background: "linear-gradient(45deg, #d33f49, #ff758c)",
+        background: "#ff3366",
         textTransform: "uppercase",
         transform: "rotate(-5deg)",
         width: "102%",
       }}
     >
       <h2 className="punk text-3xl text-center mt-6 mb-4 ml-2">
-        <span>S</span>
-        <span>i</span>
-        <span>d</span>
-        <span>e</span>
-        <span> </span>
-        <span>B</span>
+        <span>T</span>
         <span>a</span>
-        <span>r</span>
+        <span>s</span>
+        <span>k</span>
+        <span>L</span>
+        <span>i</span>
+        <span>s</span>
+        <span>t</span>
       </h2>
     </div>
   );
@@ -213,9 +213,9 @@ function SidebarToggleButton({ ontoggleSidebar, isSidebarExpanded }) {
       style={{
         transform: isSidebarExpanded ? "translateX(280px)" : "translateX(0)",
         transition: "transform 0.3s ease",
-        background: "linear-gradient(135deg,#d33f49, #ff758c)", // 紙の微妙な色合い
+        background: "linear-gradient(135deg,#d33f49, #ff3366)", // 紙の微妙な色合い
         border: "none",
-        color: "#333",
+
         padding: "15px 25px",
         boxShadow: "5px 5px 0px rgba(0, 0, 0, 0.7)", // 太めの影で大胆に
         clipPath: "polygon(95% 0%, 100% 85%, 85% 100%, 0% 100%, 5% 15%)", // ギザギザの形
