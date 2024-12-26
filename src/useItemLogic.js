@@ -2,16 +2,16 @@ import { useEffect, useState } from "react";
 
 export function useItemLogic(initialItems) {
   const [editingItemId, setEditingItemId] = useState(null);
-  const [currentItemList, setCurrentItemList] = useState(initialItems);
+  // const [currentItemList, setCurrentItemList] = useState(initialItems);
 
-  // const [currentItemList, setCurrentItemList] = useState(() => {
-  //   const savedData = localStorage.getItem("currentItemList");
-  //   return savedData ? JSON.parse(savedData) : initialItems;
-  // });
+  const [currentItemList, setCurrentItemList] = useState(() => {
+    const savedData = localStorage.getItem("currentItemList");
+    return savedData ? JSON.parse(savedData) : initialItems;
+  });
 
-  // useEffect(() => {
-  //   localStorage.setItem("currentItemList", JSON.stringify(currentItemList));
-  // }, [currentItemList]);
+  useEffect(() => {
+    localStorage.setItem("currentItemList", JSON.stringify(currentItemList));
+  }, [currentItemList]);
 
   const handleAddItem = (newItem) => {
     setCurrentItemList((currentItemList) => [...currentItemList, newItem]);

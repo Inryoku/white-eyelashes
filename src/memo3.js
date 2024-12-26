@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from "react";
 import {
   Pencil,
   Check,
@@ -16,7 +22,11 @@ import TextareaAutosize from "react-textarea-autosize";
 
 export default function App() {
   return (
-    <div className="h-screen w-full clipboard-bg patrick-hand-regular tracking-wider">
+    <div
+      className="h-screen w-full 
+    bg-[url('https://plus.unsplash.com/premium_photo-1725347346926-f568729d43b3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')]
+    //  bg-cover bg-center bg-fixed patrick-hand-regular tracking-wider"
+    >
       <ItemManager />
     </div>
   );
@@ -124,15 +134,31 @@ function Sidebar({
       className="fixed flex z-10"
       onMouseDown={(e) => onClickComponent("Sidebar", e)}
     >
-      <SidebarToggleButton
-        ontoggleSidebar={toggleSidebar}
-        isSidebarExpanded={isSidebarExpanded}
-      />
+      <button
+        onClick={toggleSidebar}
+        className="absolute -left-3 top-6 z-10 p-2 bg-black text-white"
+        style={{
+          transform: isSidebarExpanded ? "translateX(280px)" : "translateX(0)",
+          transition: "transform 0.3s ease",
+          background: "linear-gradient(135deg,#d33f49, #ff758c)", // 紙の微妙な色合い
+          border: "none",
+          color: "#333",
+          padding: "15px 25px",
+          boxShadow: "5px 5px 0px rgba(0, 0, 0, 0.7)", // 太めの影で大胆に
+          clipPath: "polygon(95% 0%, 100% 85%, 85% 100%, 0% 100%, 5% 15%)", // ギザギザの形
+        }}
+      >
+        {isSidebarExpanded ? (
+          <PanelLeftClose size={18} />
+        ) : (
+          <PanelLeftOpen size={18} />
+        )}
+      </button>
 
       {/* isSidebarVisible が true のときだけサイドバーのDOMをマウント */}
       {isSidebarVisible && (
         <div
-          className="relative flex flex-col z-20"
+          className="relative flex flex-col justify-between z-20"
           style={{
             background:
               "url('https://www.transparenttextures.com/patterns/paper.png')",
@@ -152,7 +178,22 @@ function Sidebar({
           onTransitionEnd={handleTransitionEnd}
         >
           {/* サイドバーの中身 */}
-          <SidebarHeader />
+          <h1 className="punk text-3xl text-center mt-6 mb-4">
+            <span>S</span>
+            <span>i</span>
+            <span>d</span>
+            <span>e</span>
+            <span> </span>
+            <span>L</span>
+            <span>e</span>
+            <span>t</span>
+            <span>t</span>
+            <span>e</span>
+            <span>r</span>
+            <span>i</span>
+            <span>n</span>
+            <span>g</span>
+          </h1>
 
           <SidebarSortSelector
             sortKey={sortKey}
@@ -164,7 +205,7 @@ function Sidebar({
           <SidebarItemList sortedItems={sortedItems} />
 
           <button
-            className="absolute bottom-0 w-full py-3"
+            className="w-full py-3"
             style={{
               backgroundColor: "#000",
               color: "#fff",
@@ -172,6 +213,7 @@ function Sidebar({
               textTransform: "uppercase",
               letterSpacing: "1px",
               borderTop: "4px solid #ff758c",
+              cursor: "pointer",
             }}
           >
             Clear All
@@ -179,54 +221,6 @@ function Sidebar({
         </div>
       )}
     </div>
-  );
-}
-function SidebarHeader() {
-  return (
-    <div
-      style={{
-        background: "linear-gradient(45deg, #d33f49, #ff758c)",
-        textTransform: "uppercase",
-        transform: "rotate(-5deg)",
-        width: "102%",
-      }}
-    >
-      <h2 className="punk text-3xl text-center mt-6 mb-4 ml-2">
-        <span>S</span>
-        <span>i</span>
-        <span>d</span>
-        <span>e</span>
-        <span> </span>
-        <span>B</span>
-        <span>a</span>
-        <span>r</span>
-      </h2>
-    </div>
-  );
-}
-
-function SidebarToggleButton({ ontoggleSidebar, isSidebarExpanded }) {
-  return (
-    <button
-      onClick={() => ontoggleSidebar()}
-      className="flex justify-end absolute -left-20 top-6 z-10 p-2 w-36 bg-black text-white"
-      style={{
-        transform: isSidebarExpanded ? "translateX(280px)" : "translateX(0)",
-        transition: "transform 0.3s ease",
-        background: "linear-gradient(135deg,#d33f49, #ff758c)", // 紙の微妙な色合い
-        border: "none",
-        color: "#333",
-        padding: "15px 25px",
-        boxShadow: "5px 5px 0px rgba(0, 0, 0, 0.7)", // 太めの影で大胆に
-        clipPath: "polygon(95% 0%, 100% 85%, 85% 100%, 0% 100%, 5% 15%)", // ギザギザの形
-      }}
-    >
-      {isSidebarExpanded ? (
-        <PanelLeftClose size={18} />
-      ) : (
-        <PanelLeftOpen size={18} />
-      )}
-    </button>
   );
 }
 
@@ -245,9 +239,11 @@ function SidebarSortSelector({
 
   return (
     <div
-      className="p-4  w-full mt-3  pace-y-6 "
+      className="p-4 bg-gray-100 shadow-lg rounded-md ml-3 w-64 absolute pace-y-6  top-[100px] "
       style={{
+        borderRadius: "12px",
         transform: "rotate(-1deg)",
+        boxShadow: "4px 4px 15px rgba(0, 0, 0, 0.3)",
         fontFamily: "'Indie Flower', cursive",
       }}
     >
@@ -309,29 +305,31 @@ function SidebarSortSelector({
 }
 
 function SidebarItemList({ sortedItems }) {
-  return (
-    <ul className="space-y-6 p-6 overflow-y-auto">
-      {sortedItems.map((singleItem) => (
-        <li key={singleItem.id}>
-          <SidebarItemCard singleItemData={singleItem} />
-        </li>
-      ))}
+  return sortedItems.map((singleItem) => (
+    <ul className="space-y-6 p-6">
+      <SidebarItemCard singleItemData={singleItem} />
     </ul>
-  );
+  ));
 }
 
 function SidebarItemCard({ singleItemData }) {
   return (
-    <div
-      className="p-4 bg-white flex flex-col gap-2"
+    <li
+      className="relative group p-3 bg-white shadow-lg flex flex-col items-center justify-between cursor-pointer"
       style={{
+        borderRadius: "12px",
         transform: "rotate(-2deg)",
+        boxShadow: "4px 4px 15px rgba(0, 0, 0, 0.3)",
         fontFamily: "'Indie Flower', cursive",
       }}
+      key={singleItemData.id}
     >
       <h3>{singleItemData.title}</h3>
       <ProgressBar progress={singleItemData.progress} />
-    </div>
+      <p className="text-sm text-gray-600 whitespace-pre-wrap">
+        {singleItemData.description}
+      </p>
+    </li>
   );
 }
 
@@ -498,12 +496,14 @@ function DisplayCard({
   const cardRef = useRef(null); // カードの高さを取得するためのref
   const [cardHeight, setCardHeight] = useState(0);
 
-  useEffect(() => {
-    if (cardRef.current) {
-      setCardHeight(cardRef.current.getBoundingClientRect().height);
-      setIsDescriptionLong(cardHeight > 290);
-    }
-  }, [cardHeight]);
+  // useEffect(() => {
+  //   if (cardRef.current) {
+  //     const height = cardRef.current.getBoundingClientRect().height;
+  //     setCardHeight(height);
+  //     console.log("Calculated cardHeight:", height);
+  //     setIsDescriptionLong(height > 290);
+  //   }
+  // }, [cardHeight]);
 
   const handleToggleStickerPicker = () => {
     setIsStickerPickerVisible(() => !isStickerPickerVisible);
@@ -519,7 +519,7 @@ function DisplayCard({
 
   return (
     <div
-      ref={cardRef}
+      // ref={cardRef}
       className="todo-card p-4 flex flex-col gap-2"
       style={{
         position: "absolute",
@@ -544,19 +544,32 @@ function DisplayCard({
       ) : null}
 
       <ProgressBar progress={singleItemData.progress} isEditing={isEditing} />
-
-      <DescriptionDisplay
-        description={singleItemData.description}
-        isDescriptionLong={isDescriptionLong}
-        isDescriptionOpen={isDescriptionOpen}
-      />
+      <p className="text-sm text-gray-600 whitespace-pre-wrap">
+        {singleItemData.description}
+      </p>
+      {/* <p
+        className={`text-sm text-gray-600 whitespace-pre-wrap overflow-hidden transition-[max-height] duration-500 ease-in-out ${
+          isDescriptionLong
+            ? isDescriptionOpen
+              ? "max-h-[1000px]"
+              : "max-h-32"
+            : "h-16"
+        }`}
+      >
+        {singleItemData.description}
+      </p>
+      {!isDescriptionOpen && isDescriptionLong ? (
+        <div className="absolute bottom-10 left-0 w-full h-10 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none">
+          <div className="absolute bottom-0 w-full h-full blur-md"></div>
+        </div>
+      ) : null} */}
 
       <div className="flex gap-2 justify-end mr-4">
-        <DescriptionToggleButton
+        {/* <DescriptionToggleButton
           isDescriptionLong={isDescriptionLong}
           isDescriptionOpen={isDescriptionOpen}
           onToggleDescriptionTab={handleToggleDescriptionTab}
-        />
+        /> */}
 
         <button
           onClick={() => setIsModalOpen(true)}
@@ -597,55 +610,55 @@ function DisplayCard({
   );
 }
 
-function DescriptionDisplay({
-  description,
-  isDescriptionLong,
-  isDescriptionOpen,
-}) {
-  return (
-    <>
-      <p
-        className={`text-sm text-gray-600 whitespace-pre-wrap overflow-hidden transition-[max-height] duration-500 ease-in-out ${
-          isDescriptionLong
-            ? isDescriptionOpen
-              ? "max-h-[1000px]"
-              : "max-h-32"
-            : "h-auto"
-        }`}
-      >
-        {description}
-      </p>
-      {!isDescriptionOpen && isDescriptionLong ? (
-        <div className="absolute bottom-10 left-0 w-full h-10 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none">
-          <div className="absolute bottom-0 w-full h-full blur-md"></div>
-        </div>
-      ) : null}
-    </>
-  );
-}
+// function DescriptionDisplay({
+//   description,
+//   isDescriptionLong,
+//   isDescriptionOpen,
+// }) {
+//   return (
+//     <>
+//       <p
+//         className={`text-sm text-gray-600 whitespace-pre-wrap overflow-hidden transition-[max-height] duration-500 ease-in-out ${
+//           isDescriptionLong
+//             ? isDescriptionOpen
+//               ? "max-h-[1000px]"
+//               : "max-h-32"
+//             : "h-auto"
+//         }`}
+//       >
+//         {description}
+//       </p>
+//       {!isDescriptionOpen && isDescriptionLong ? (
+//         <div className="absolute bottom-10 left-0 w-full h-10 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none">
+//           <div className="absolute bottom-0 w-full h-full blur-md"></div>
+//         </div>
+//       ) : null}
+//     </>
+//   );
+// }
 
-function DescriptionToggleButton({
-  isDescriptionLong,
-  isDescriptionOpen,
-  onToggleDescriptionTab,
-}) {
-  return (
-    <>
-      {isDescriptionLong ? (
-        <button
-          onClick={() => onToggleDescriptionTab()}
-          className="mr-auto text-gray-400 hover:text-violet-400 transition-colors"
-        >
-          {isDescriptionOpen ? (
-            <ChevronUp size={18} />
-          ) : (
-            <ChevronDown size={18} />
-          )}
-        </button>
-      ) : null}
-    </>
-  );
-}
+// function DescriptionToggleButton({
+//   isDescriptionLong,
+//   isDescriptionOpen,
+//   onToggleDescriptionTab,
+// }) {
+//   return (
+//     <>
+//       {isDescriptionLong ? (
+//         <button
+//           onClick={() => onToggleDescriptionTab()}
+//           className="mr-auto text-gray-400 hover:text-violet-400 transition-colors"
+//         >
+//           {isDescriptionOpen ? (
+//             <ChevronUp size={18} />
+//           ) : (
+//             <ChevronDown size={18} />
+//           )}
+//         </button>
+//       ) : null}
+//     </>
+//   );
+// }
 
 function DeleteModal({ isOpen, onConfirm, onCancel }) {
   if (!isOpen) return null;
