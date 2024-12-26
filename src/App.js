@@ -10,6 +10,8 @@ import {
   PanelLeftOpen,
   ChevronDown,
   ChevronUp,
+  Coffee,
+  Flame,
 } from "lucide-react";
 import { useItemLogic } from "./useItemLogic";
 import TextareaAutosize from "react-textarea-autosize";
@@ -181,6 +183,7 @@ function Sidebar({
     </div>
   );
 }
+
 function SidebarHeader() {
   return (
     <div
@@ -191,7 +194,7 @@ function SidebarHeader() {
         width: "102%",
       }}
     >
-      <h2 className="punk text-3xl text-center mt-6 mb-4 ml-2">
+      <h2 className="punk text-[1.75rem] text-center mt-6 mb-4 ml-2 ">
         <span>T</span>
         <span>a</span>
         <span>s</span>
@@ -236,6 +239,21 @@ function SidebarSortSelector({
   onChangeSortOrder,
   onChangeSortKey,
 }) {
+  const SORT_ORDER_OPTIONS = {
+    id: [
+      { value: "asc", label: "Then → Now" },
+      { value: "desc", label: "Now → Then" },
+    ],
+    progress: [
+      { value: "asc", label: "0% → 100%" },
+      { value: "desc", label: "100% → 0%" },
+    ],
+    priority: [
+      { value: "asc", label: "Low → High" },
+      { value: "desc", label: "High → Low" },
+    ],
+  };
+
   const handleSortKeyChange = (e) => {
     onChangeSortKey(e.target.value);
   };
@@ -245,7 +263,7 @@ function SidebarSortSelector({
 
   return (
     <div
-      className="p-4  w-full mt-3  pace-y-6 "
+      className="p-4 w-full mt-3 ml-3 space-y-6"
       style={{
         transform: "rotate(-1deg)",
         fontFamily: "'Indie Flower', cursive",
@@ -261,6 +279,7 @@ function SidebarSortSelector({
       >
         Sort Options
       </h2>
+
       {/* ソートキー選択 */}
       <div className="flex items-center space-x-2 mb-2">
         <label
@@ -270,7 +289,7 @@ function SidebarSortSelector({
             color: "#555",
           }}
         >
-          Key:
+          Sort By:
         </label>
         <select
           id="sortKey"
@@ -278,11 +297,12 @@ function SidebarSortSelector({
           onChange={handleSortKeyChange}
           className="p-2 border rounded"
         >
-          <option value="id">Date</option>
+          <option value="id">Added Time</option>
           <option value="progress">Progress</option>
           <option value="priority">Priority</option>
         </select>
       </div>
+
       {/* ソート順序選択 */}
       <div className="flex items-center space-x-2">
         <label
@@ -300,8 +320,11 @@ function SidebarSortSelector({
           onChange={handleSortOrderChange}
           className="p-2 border rounded"
         >
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
+          {SORT_ORDER_OPTIONS[sortKey].map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
         </select>
       </div>
     </div>
@@ -330,6 +353,7 @@ function SidebarItemCard({ singleItemData }) {
       }}
     >
       <h3>{singleItemData.title}</h3>
+      <PriorityTag priority={singleItemData.priority} />
       <ProgressBar progress={singleItemData.progress} />
     </div>
   );
@@ -520,9 +544,8 @@ function DisplayCard({
   return (
     <div
       ref={cardRef}
-      className="todo-card p-4 flex flex-col gap-2"
+      className="absolute todo-card p-4 flex flex-col gap-2"
       style={{
-        position: "absolute",
         left: singleItemData.position.x,
         top: singleItemData.position.y,
         width: `${singleItemData.width}px`,
@@ -543,9 +566,13 @@ function DisplayCard({
         />
       ) : null}
 
-      <ProgressBar progress={singleItemData.progress} isEditing={isEditing} />
+      <PriorityTag priority={singleItemData.priority} />
 
-      <DescriptionDisplay
+      {singleItemData.progress !== 0 ? (
+        <ProgressBar progress={singleItemData.progress} isEditing={isEditing} />
+      ) : null}
+
+      <TaskDescription
         description={singleItemData.description}
         isDescriptionLong={isDescriptionLong}
         isDescriptionOpen={isDescriptionOpen}
@@ -597,7 +624,52 @@ function DisplayCard({
   );
 }
 
-function DescriptionDisplay({
+function PriorityTag({ priority, isEditing, onChangePriority }) {
+  const PRIORITY_HIGH = 3;
+  const PRIORITY_MIDDLE = 2;
+  const PRIORITY_LOW = 1;
+
+  const PRIORITY_MAP = {
+    3: {
+      icon: <Flame size={18} />,
+      label: "High",
+      color: "text-red-500",
+    },
+    1: {
+      icon: <Coffee size={18} />,
+      label: "Low",
+      color: "text-sky-500",
+    },
+    default: { icon: null, label: null, color: "text-gray-500" },
+  };
+  const priorityData = PRIORITY_MAP[priority] || PRIORITY_MAP.default;
+
+  const handleChange = (e) => {
+    if (onChangePriority) {
+      onChangePriority(Number(e.target.value));
+    }
+  };
+
+  return isEditing ? (
+    <select
+      id="sortKey"
+      value={priority}
+      onChange={handleChange}
+      className="p-1 punk-input border rounded w-32"
+    >
+      <option value={PRIORITY_HIGH}>⇧High</option>
+      <option value={PRIORITY_MIDDLE}>---</option>
+      <option value={PRIORITY_LOW}>⇩Low</option>
+    </select>
+  ) : (
+    <div className={`flex items-center gap-2 ${priorityData.color}`}>
+      {priorityData.icon}
+      <span>{priorityData.label}</span>
+    </div>
+  );
+}
+
+function TaskDescription({
   description,
   isDescriptionLong,
   isDescriptionOpen,
@@ -728,13 +800,6 @@ function EditForm({
   const [priority, setPriority] = useState(singleItemData.priority);
   const [progress, setProgress] = useState(singleItemData.progress);
 
-  // 将来の実装予定を明示するダミー関数
-  useEffect(() => {
-    if (false) {
-      setPriority(priority); // 未使用の警告を回避
-    }
-  }, [priority]);
-
   const handleSaveEdit = useCallback(() => {
     const editedData = {
       title,
@@ -768,6 +833,10 @@ function EditForm({
     setProgress(newProgress);
   };
 
+  const handleChangePriority = (newPriority) => {
+    setPriority(newPriority);
+  };
+
   return (
     <div
       className="todo-card p-4 flex flex-col gap-3"
@@ -778,15 +847,21 @@ function EditForm({
         width: `${singleItemData.width}px`,
       }}
     >
-      <input
-        className="flex-1 px-2 py-1 punk-input"
-        type="text"
+      <TextareaAutosize
+        className="w-full px-2 py-1 punk-input text-lg"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title..."
+        minRows={1} // 最小行数を1に設定（シングルラインに見せる）
+        maxRows={5} // 最大行数（必要に応じて調整可能）
         autoFocus
       />
 
+      <PriorityTag
+        priority={priority}
+        isEditing={isEditing}
+        onChangePriority={handleChangePriority}
+      />
       <ProgressBar
         progress={progress}
         isEditing={isEditing}
