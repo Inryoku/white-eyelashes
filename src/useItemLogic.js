@@ -23,6 +23,10 @@ export function useItemLogic(initialItems) {
     );
   };
 
+  const handleDeleteAllItem = () => {
+    setCurrentItemList([]);
+  };
+
   const handleAddTaskTitle = (taskTitle) => {
     const randomX = 300 + Math.random() * (window.innerWidth - 300 - 300);
     const randomY = Math.random() * (window.innerHeight - 200);
@@ -113,5 +117,6 @@ export function useItemLogic(initialItems) {
     sortedItems,
     sortKey,
     sortOrder,
+    handleDeleteAllItem,
   };
 }

@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { useItemLogic } from "./useItemLogic";
 import TextareaAutosize from "react-textarea-autosize";
+import rough from "roughjs/bundled/rough.esm";
+import { annotate } from "rough-notation";
 
 export default function App() {
   return (
@@ -38,6 +40,7 @@ function ItemManager() {
     sortedItems,
     sortKey,
     sortOrder,
+    handleDeleteAllItem,
   } = useItemLogic([
     {
       id: 1,
@@ -70,6 +73,7 @@ function ItemManager() {
         onChangeSortOrder={handleChangeSortOrder}
         sortedItems={sortedItems}
         onClickComponent={handleClickComponent}
+        onDeleteAllItem={handleDeleteAllItem}
       />
       <Board
         currentItemList={currentItemList}
@@ -93,7 +97,10 @@ function Sidebar({
   sortOrder,
   sortKey,
   onClickComponent,
+  onDeleteAllItem,
 }) {
+  const [isClearModalVisible, setIsClearModalVisible] = useState(false);
+  const clearButtonRef = useRef(null); // ボタンの位置を取得するためのref
   // 表示・非表示を分ける用
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   // トグルで開閉アニメーションさせる用
@@ -166,20 +173,93 @@ function Sidebar({
           <SidebarItemList sortedItems={sortedItems} />
 
           <button
-            className="absolute bottom-0 w-full py-3"
+            ref={clearButtonRef} // ボタンの位置を取得するためのref
+            className="absolute bottom-0 w-full py-3 indie-flower-regular"
             style={{
               backgroundColor: "#000",
               color: "#fff",
-              fontFamily: "'Permanent Marker', cursive",
               textTransform: "uppercase",
               letterSpacing: "1px",
               borderTop: "4px solid #ff758c",
             }}
+            onClick={() => setIsClearModalVisible(true)}
           >
             Clear All
           </button>
+
+          <InteractionModal
+            isVisible={isClearModalVisible}
+            clearButtonRef={clearButtonRef}
+            onCancel={() => setIsClearModalVisible(false)}
+            onConfirm={() => {
+              onDeleteAllItem();
+              setIsClearModalVisible(false);
+            }}
+          />
         </div>
       )}
+    </div>
+  );
+}
+
+function InteractionModal({ isVisible, clearButtonRef, onConfirm, onCancel }) {
+  const modalRef = useRef(null);
+
+  React.useEffect(() => {
+    if (isVisible && clearButtonRef.current && modalRef.current) {
+      const buttonRect = clearButtonRef.current.getBoundingClientRect();
+      const modalRect = modalRef.current.getBoundingClientRect();
+      const canvas = document.getElementById("arrow-canvas");
+      const ctx = canvas.getContext("2d");
+
+      // Rough.jsで描画
+      const rc = rough.canvas(canvas);
+      rc.line(
+        buttonRect.x + buttonRect.width / 2, // ボタンの中央
+        buttonRect.y, // ボタンの上部
+        modalRect.x + modalRect.width / 2, // モーダルの中央
+        modalRect.y + modalRect.height, // モーダルの下部
+        {
+          stroke: "white", // 線の色を白に設定
+          strokeWidth: 2, // 線の太さを調整（必要に応じて変更）
+          roughness: 3, // 手描き風の荒さ（小さくすると滑らかになる）
+        }
+      );
+    }
+  }, [isVisible]);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center">
+      {/* 矢印を描画するCanvas */}
+      <canvas
+        id="arrow-canvas"
+        className="absolute inset-0 pointer-events-none"
+        width={window.innerWidth}
+        height={window.innerHeight}
+      ></canvas>
+
+      {/* モーダル */}
+      <div ref={modalRef} className=" p-1 rounded-xl relative shadow-lg">
+        <h2 className="text-white font-indie-flower text-3xl mb-4">
+          Are you sure?
+        </h2>
+        <div className="flex justify-around items-center">
+          <button
+            onClick={onConfirm}
+            className="font-indie-flower text-lg mx-2 px-4 py-2 border rounded bg-green-300 hover:bg-green-400"
+          >
+            Sure✨
+          </button>
+          <button
+            onClick={onCancel}
+            className="font-indie-flower text-lg mx-2 px-4 py-2 border rounded bg-red-300 hover:bg-red-400"
+          >
+            Oops,Cancel
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -333,7 +413,7 @@ function SidebarSortSelector({
 
 function SidebarItemList({ sortedItems }) {
   return (
-    <ul className="space-y-6 p-6 overflow-y-auto">
+    <ul className="space-y-6 p-6 overflow-y-auto mb-10">
       {sortedItems.map((singleItem) => (
         <li key={singleItem.id}>
           <SidebarItemCard singleItemData={singleItem} />
@@ -344,15 +424,27 @@ function SidebarItemList({ sortedItems }) {
 }
 
 function SidebarItemCard({ singleItemData }) {
+  const ref = useRef(null);
+
+  // useEffect(() => {
+  //   const annotation = annotate(ref.current, {
+  //     type: "highlight", // アンダーライン
+  //     color: "#ff3366", // 線の色
+  //     strokeWidth: 2, // 線の太さ
+  //     padding: 5, // テキストの周りの余白
+  //     iterations: 2, // 描画の繰り返し回数（手描き感を強調）
+  //   });
+  //   annotation.show(); // アニメーションを表示
+  // }, []);
+
   return (
     <div
-      className="p-4 bg-white flex flex-col gap-2"
+      className="p-4 notebookWhite-bg shadow-xl flex flex-col gap-2 patrick-hand-regular"
       style={{
         transform: "rotate(-2deg)",
-        fontFamily: "'Indie Flower', cursive",
       }}
     >
-      <h3>{singleItemData.title}</h3>
+      <h3 ref={ref}>{singleItemData.title}</h3>
       <PriorityTag priority={singleItemData.priority} />
       <ProgressBar progress={singleItemData.progress} />
     </div>
@@ -680,7 +772,7 @@ function TaskDescription({
         className={`text-sm text-gray-600 whitespace-pre-wrap overflow-hidden transition-[max-height] duration-500 ease-in-out ${
           isDescriptionLong
             ? isDescriptionOpen
-              ? "max-h-[1000px]"
+              ? "max-h-[450px]"
               : "max-h-32"
             : "h-auto"
         }`}
