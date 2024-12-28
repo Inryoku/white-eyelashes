@@ -6,8 +6,6 @@ import {
   Plus,
   Trash2,
   Sticker,
-  PanelLeftClose,
-  PanelLeftOpen,
   ChevronDown,
   ChevronUp,
   Coffee,
@@ -16,6 +14,7 @@ import {
   ChevronsLeft,
 } from "lucide-react";
 import { useItemLogic } from "./useItemLogic";
+import { useClickAnnotation } from "./useClickAnnotation";
 import TextareaAutosize from "react-textarea-autosize";
 import rough from "roughjs/bundled/rough.esm";
 import { annotate } from "rough-notation";
@@ -473,27 +472,14 @@ function SidebarItemList({ sortedItems, onTurnEdit, editingItemId }) {
 
 function SidebarItemCard({ singleItemData, onTurnEdit, isEditing }) {
   const ref = useRef(null);
-  const annotationRef = useRef(null); // アノテーションを保持するref
-
-  useEffect(() => {
-    // 既存のアノテーションがあれば削除
-    if (annotationRef.current) {
-      annotationRef.current.remove();
-      annotationRef.current = null;
-    }
-
-    if (isEditing) {
-      const annotation = annotate(ref.current, {
-        type: "circle",
-        color: "#ff3366",
-        strokeWidth: 2,
-        padding: 5,
-        iterations: 2,
-      });
-      annotation.show();
-      annotationRef.current = annotation; // アノテーションを保存
-    }
-  }, [isEditing]);
+  // カスタムフックでアノテーションを適用
+  useClickAnnotation(ref, isEditing, {
+    type: "circle",
+    color: "#ff3366",
+    strokeWidth: 2,
+    padding: 5,
+    iterations: 2,
+  });
 
   return (
     <div
