@@ -204,9 +204,15 @@ function Sidebar({
 
 function InteractionModal({ isVisible, clearButtonRef, onConfirm, onCancel }) {
   const modalRef = useRef(null);
+  const okRef = useRef(null);
+  const ngRef = useRef(null);
+  const annotationRef = useRef(null); // アノテーションの参照
 
+  // モーダルの矢印描画
   React.useEffect(() => {
-    if (isVisible && clearButtonRef.current && modalRef.current) {
+    if (!isVisible) return;
+
+    if (clearButtonRef.current && modalRef.current) {
       const buttonRect = clearButtonRef.current.getBoundingClientRect();
       const modalRect = modalRef.current.getBoundingClientRect();
       const canvas = document.getElementById("arrow-canvas");
@@ -221,12 +227,34 @@ function InteractionModal({ isVisible, clearButtonRef, onConfirm, onCancel }) {
         modalRect.y + modalRect.height, // モーダルの下部
         {
           stroke: "white", // 線の色を白に設定
-          strokeWidth: 2, // 線の太さを調整（必要に応じて変更）
-          roughness: 3, // 手描き風の荒さ（小さくすると滑らかになる）
+          strokeWidth: 2, // 線の太さを調整
+          roughness: 3, // 手描き風の荒さ
         }
       );
     }
   }, [isVisible]);
+
+  // ボタンのホバーイベント
+  const handleMouseEnter = (targetRef, color) => {
+    if (targetRef.current) {
+      const annotation = annotate(targetRef.current, {
+        type: "highlight", // アンダーライン
+        color: color, // 線の色
+        strokeWidth: 2, // 線の太さ
+        padding: 5, // テキストの周りの余白
+        iterations: 2, // 描画の繰り返し回数
+      });
+      annotation.show();
+      annotationRef.current = annotation; // アノテーションを保存
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (annotationRef.current) {
+      annotationRef.current.remove(); // アノテーションを削除
+      annotationRef.current = null;
+    }
+  };
 
   if (!isVisible) return null;
 
@@ -241,20 +269,27 @@ function InteractionModal({ isVisible, clearButtonRef, onConfirm, onCancel }) {
       ></canvas>
 
       {/* モーダル */}
-      <div ref={modalRef} className=" p-1 rounded-xl relative shadow-lg">
+      <div ref={modalRef} className="p-1 rounded-xl relative shadow-lg">
         <h2 className="text-white font-indie-flower text-3xl mb-4">
           Are you sure?
         </h2>
         <div className="flex justify-around items-center">
           <button
+            ref={okRef}
             onClick={onConfirm}
-            className="font-indie-flower text-lg mx-2 px-4 py-2 border rounded bg-green-300 hover:bg-green-400"
+            onMouseEnter={() => handleMouseEnter(okRef, "#31c418")} // ホバー時に実行
+            onMouseLeave={handleMouseLeave} // ホバー解除時にリセット
+            className="font-indie-flower text-lg mx-2 px-4 py-2 border rounded text-white"
           >
             Sure✨
           </button>
+
           <button
+            ref={ngRef}
             onClick={onCancel}
-            className="font-indie-flower text-lg mx-2 px-4 py-2 border rounded bg-red-300 hover:bg-red-400"
+            onMouseEnter={() => handleMouseEnter(ngRef, "#c41843")} // ホバー時に実行
+            onMouseLeave={handleMouseLeave} // ホバー解除時にリセット
+            className="font-indie-flower text-lg mx-2 px-4 py-2 border rounded text-white"
           >
             Oops,Cancel
           </button>
@@ -424,19 +459,6 @@ function SidebarItemList({ sortedItems }) {
 }
 
 function SidebarItemCard({ singleItemData }) {
-  const ref = useRef(null);
-
-  // useEffect(() => {
-  //   const annotation = annotate(ref.current, {
-  //     type: "highlight", // アンダーライン
-  //     color: "#ff3366", // 線の色
-  //     strokeWidth: 2, // 線の太さ
-  //     padding: 5, // テキストの周りの余白
-  //     iterations: 2, // 描画の繰り返し回数（手描き感を強調）
-  //   });
-  //   annotation.show(); // アニメーションを表示
-  // }, []);
-
   return (
     <div
       className="p-4 notebookWhite-bg shadow-xl flex flex-col gap-2 patrick-hand-regular"
@@ -444,7 +466,7 @@ function SidebarItemCard({ singleItemData }) {
         transform: "rotate(-2deg)",
       }}
     >
-      <h3 ref={ref}>{singleItemData.title}</h3>
+      <h3>{singleItemData.title}</h3>
       <PriorityTag priority={singleItemData.priority} />
       <ProgressBar progress={singleItemData.progress} />
     </div>
