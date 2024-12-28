@@ -12,6 +12,8 @@ import {
   ChevronUp,
   Coffee,
   Flame,
+  NotebookTabs,
+  ChevronsLeft,
 } from "lucide-react";
 import { useItemLogic } from "./useItemLogic";
 import TextareaAutosize from "react-textarea-autosize";
@@ -55,12 +57,13 @@ function ItemManager() {
       sticker: "🔥",
     },
   ]);
-
   const [isItemCardClicked, setIsItemCardClicked] = useState();
   const handleClickComponent = (componentName, e) => {
     e.stopPropagation(); // イベントの伝播を止める
     console.log(`Clicked on: ${componentName}`);
-    setIsItemCardClicked(componentName === "ItemCard");
+    setIsItemCardClicked(
+      componentName === "ItemCard" || componentName === "Sidebar"
+    );
     console.log(isItemCardClicked);
   };
 
@@ -74,6 +77,8 @@ function ItemManager() {
         sortedItems={sortedItems}
         onClickComponent={handleClickComponent}
         onDeleteAllItem={handleDeleteAllItem}
+        onTurnEdit={handleEditId}
+        editingItemId={editingItemId}
       />
       <Board
         currentItemList={currentItemList}
@@ -98,6 +103,8 @@ function Sidebar({
   sortKey,
   onClickComponent,
   onDeleteAllItem,
+  onTurnEdit,
+  editingItemId,
 }) {
   const [isClearModalVisible, setIsClearModalVisible] = useState(false);
   const clearButtonRef = useRef(null); // ボタンの位置を取得するためのref
@@ -170,7 +177,11 @@ function Sidebar({
             onChangeSortOrder={onChangeSortOrder}
           />
 
-          <SidebarItemList sortedItems={sortedItems} />
+          <SidebarItemList
+            sortedItems={sortedItems}
+            onTurnEdit={onTurnEdit}
+            editingItemId={editingItemId}
+          />
 
           <button
             ref={clearButtonRef} // ボタンの位置を取得するためのref
@@ -303,7 +314,7 @@ function SidebarHeader() {
   return (
     <div
       style={{
-        background: "#ff3366",
+        background: "#e63c66",
         textTransform: "uppercase",
         transform: "rotate(-5deg)",
         width: "102%",
@@ -327,22 +338,20 @@ function SidebarToggleButton({ ontoggleSidebar, isSidebarExpanded }) {
   return (
     <button
       onClick={() => ontoggleSidebar()}
-      className="flex justify-end absolute -left-20 top-6 z-10 p-2 w-36 bg-black text-white"
+      className="flex justify-end absolute -left-20 top-6 z-10  w-36  text-white"
       style={{
         transform: isSidebarExpanded ? "translateX(280px)" : "translateX(0)",
         transition: "transform 0.3s ease",
         background: "linear-gradient(135deg,#d33f49, #ff3366)", // 紙の微妙な色合い
-        border: "none",
-
         padding: "15px 25px",
         boxShadow: "5px 5px 0px rgba(0, 0, 0, 0.7)", // 太めの影で大胆に
         clipPath: "polygon(95% 0%, 100% 85%, 85% 100%, 0% 100%, 5% 15%)", // ギザギザの形
       }}
     >
       {isSidebarExpanded ? (
-        <PanelLeftClose size={18} />
+        <ChevronsLeft size={22} />
       ) : (
-        <PanelLeftOpen size={18} />
+        <NotebookTabs size={22} />
       )}
     </button>
   );
@@ -446,27 +455,55 @@ function SidebarSortSelector({
   );
 }
 
-function SidebarItemList({ sortedItems }) {
+function SidebarItemList({ sortedItems, onTurnEdit, editingItemId }) {
   return (
     <ul className="space-y-6 p-6 overflow-y-auto mb-10">
       {sortedItems.map((singleItem) => (
         <li key={singleItem.id}>
-          <SidebarItemCard singleItemData={singleItem} />
+          <SidebarItemCard
+            singleItemData={singleItem}
+            onTurnEdit={() => onTurnEdit(singleItem.id)}
+            isEditing={editingItemId === singleItem.id}
+          />
         </li>
       ))}
     </ul>
   );
 }
 
-function SidebarItemCard({ singleItemData }) {
+function SidebarItemCard({ singleItemData, onTurnEdit, isEditing }) {
+  const ref = useRef(null);
+  const annotationRef = useRef(null); // アノテーションを保持するref
+
+  useEffect(() => {
+    // 既存のアノテーションがあれば削除
+    if (annotationRef.current) {
+      annotationRef.current.remove();
+      annotationRef.current = null;
+    }
+
+    if (isEditing) {
+      const annotation = annotate(ref.current, {
+        type: "circle",
+        color: "#ff3366",
+        strokeWidth: 2,
+        padding: 5,
+        iterations: 2,
+      });
+      annotation.show();
+      annotationRef.current = annotation; // アノテーションを保存
+    }
+  }, [isEditing]);
+
   return (
     <div
+      onMouseDown={onTurnEdit}
       className="p-4 notebookWhite-bg shadow-xl flex flex-col gap-2 patrick-hand-regular"
       style={{
         transform: "rotate(-2deg)",
       }}
     >
-      <h3>{singleItemData.title}</h3>
+      <h3 ref={ref}>{singleItemData.title}</h3>
       <PriorityTag priority={singleItemData.priority} />
       <ProgressBar progress={singleItemData.progress} />
     </div>
